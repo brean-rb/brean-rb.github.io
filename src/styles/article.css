@@ -1,0 +1,277 @@
+/* ==========================================================================
+   CONTENIDO DE ARTÍCULO (Markdown de src/content/projects)
+   ========================================================================== */
+/* Se importa solo en src/pages/projects/[...slug].astro. Reutiliza al 100%
+   las variables definidas en global.css — cero colores/tipografías nuevas.
+   Vive en un archivo aparte porque es tipografía de prosa larga, un problema
+   distinto al de los componentes de la home (que no se tocan aquí). */
+
+/* -- Tema de Shiki basado en variables CSS -------------------------------- */
+/* astro.config.mjs usa shikiConfig.theme: 'css-variables', así que Shiki
+   emite `color:var(--astro-code-*)` en vez de hex fijos de un tema
+   (p. ej. github-dark). Aquí mapeamos esas variables a la paleta existente.
+   Prefijo confirmado leyendo node_modules/@astrojs/internal-helpers: Astro
+   fuerza "--astro-code-", distinto del "--shiki-" por defecto de la librería. */
+:root {
+	--astro-code-foreground: var(--color-text-main);
+	--astro-code-background: var(--color-bg-alt);
+	--astro-code-token-comment: var(--color-text-muted);
+	--astro-code-token-string: var(--color-accent-hover);
+	--astro-code-token-string-expression: var(--color-accent-hover);
+	--astro-code-token-constant: var(--color-accent);
+	--astro-code-token-keyword: var(--color-accent);
+	--astro-code-token-parameter: var(--color-text-main);
+	--astro-code-token-function: var(--color-primary);
+	--astro-code-token-punctuation: var(--color-text-muted);
+	--astro-code-token-link: var(--color-accent-hover);
+}
+
+/* -- Contenedor de lectura ------------------------------------------------- */
+.article-content {
+	max-width: 700px;
+	margin: 0 auto;
+	text-align: left;
+}
+
+.article-back {
+	display: inline-block;
+	margin-bottom: var(--spacing-md);
+	font-family: var(--font-mono);
+	font-size: 0.85rem;
+	color: var(--color-text-muted);
+	text-decoration: none;
+}
+
+.article-back:hover,
+.article-back:focus-visible {
+	color: var(--color-accent);
+	outline: none;
+}
+
+.article-header {
+	margin-bottom: var(--spacing-lg);
+}
+
+.article-title {
+	font-size: 2.25rem;
+	font-weight: 700;
+	color: var(--color-primary);
+	letter-spacing: -0.03em;
+	line-height: 1.2;
+	margin-bottom: var(--spacing-xs);
+}
+
+.article-meta {
+	color: var(--color-text-muted);
+	font-size: 0.85rem;
+}
+
+.article-repo {
+	margin-top: var(--spacing-lg);
+}
+
+/* -- Tipografía del cuerpo -------------------------------------------------- */
+.article-body {
+	font-size: 1.125rem;
+	line-height: 1.8;
+	color: var(--color-text-main);
+}
+
+.article-body > * {
+	margin-top: 0;
+	margin-bottom: var(--spacing-md);
+}
+
+.article-body > *:last-child {
+	margin-bottom: 0;
+}
+
+.article-body h2 {
+	margin-top: var(--spacing-lg);
+	margin-bottom: var(--spacing-sm);
+	font-size: 1.75rem;
+	font-weight: 700;
+	color: var(--color-primary);
+	letter-spacing: -0.02em;
+	line-height: 1.25;
+}
+
+.article-body h2:first-child {
+	margin-top: 0;
+}
+
+.article-body h3 {
+	margin-top: var(--spacing-md);
+	margin-bottom: 0.5rem;
+	font-size: 1.3rem;
+	font-weight: 600;
+	color: var(--color-primary);
+}
+
+.article-body ul,
+.article-body ol {
+	padding-left: 1.5rem;
+}
+
+.article-body li {
+	margin-bottom: 0.5rem;
+	line-height: 1.8;
+}
+
+.article-body li:last-child {
+	margin-bottom: 0;
+}
+
+.article-body a {
+	color: var(--color-accent);
+	text-decoration: underline;
+	text-decoration-color: var(--color-border);
+	text-underline-offset: 3px;
+	transition: color 0.2s ease, text-decoration-color 0.2s ease;
+}
+
+.article-body a:hover,
+.article-body a:focus-visible {
+	color: var(--color-accent-hover);
+	text-decoration-color: currentColor;
+	outline: none;
+}
+
+.article-body strong {
+	color: var(--color-primary);
+	font-weight: 700;
+}
+
+/* Código inline (no dentro de un bloque ```) */
+.article-body :not(pre) > code {
+	font-family: var(--font-mono);
+	background-color: var(--color-bg-alt);
+	border: 1px solid var(--color-border);
+	border-radius: var(--border-radius);
+	padding: 0.15em 0.4em;
+	font-size: 0.85em;
+	color: var(--color-primary);
+}
+
+/* -- Bloques de código estilo GitHub ---------------------------------------- */
+.article-body pre.astro-code {
+	position: relative;
+	padding: 2.75rem 1.25rem 1.25rem;
+	border: 1px solid var(--color-border);
+	border-radius: calc(var(--border-radius) * 3);
+	font-family: var(--font-mono);
+	font-size: 0.9rem;
+	line-height: 1.6;
+	/* Una línea de código muy larga no debe romper el layout de la página:
+	   scroll horizontal contenido dentro del propio bloque. */
+	overflow-x: auto;
+}
+
+/* Barra superior con el nombre del lenguaje (viene del ``` del Markdown,
+   Shiki lo expone en el atributo data-language del <pre>) */
+.article-body pre.astro-code::before {
+	content: attr(data-language);
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 2.25rem;
+	display: flex;
+	align-items: center;
+	padding: 0 5rem 0 1.25rem;
+	background-color: var(--color-primary-light);
+	border-bottom: 1px solid var(--color-border);
+	border-radius: calc(var(--border-radius) * 3) calc(var(--border-radius) * 3) 0 0;
+	color: var(--color-text-muted);
+	font-family: var(--font-mono);
+	font-size: 0.75rem;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+}
+
+/* Botón "Copiar" — inyectado por el script de la página, mismas convenciones
+   tipográficas que .btn en global.css (mono, mayúsculas, letter-spacing) */
+.article-body .code-copy-btn {
+	position: absolute;
+	top: 0.5rem;
+	right: 0.9rem;
+	z-index: 1;
+	background-color: transparent;
+	border: 1px solid var(--color-border);
+	border-radius: var(--border-radius);
+	color: var(--color-text-muted);
+	font-family: var(--font-mono);
+	font-size: 0.7rem;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	padding: 0.25rem 0.6rem;
+	cursor: pointer;
+	transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.article-body .code-copy-btn:hover,
+.article-body .code-copy-btn:focus-visible {
+	color: var(--color-accent);
+	border-color: var(--color-accent);
+	outline: none;
+}
+
+/* -- Imágenes con pie de figura ---------------------------------------------- */
+.article-body figure {
+	margin: 0;
+}
+
+.article-body figure img {
+	display: block;
+	width: 100%;
+	height: auto;
+	border: 1px solid var(--color-border);
+	border-radius: var(--border-radius);
+	box-shadow: 0 4px 12px rgba(13, 19, 23, 0.06);
+}
+
+.article-body figcaption {
+	margin-top: 0.6rem;
+	text-align: center;
+	font-family: var(--font-mono);
+	font-size: 0.8rem;
+	color: var(--color-text-muted);
+}
+
+/* Red de seguridad para imágenes que el script no llegue a envolver */
+.article-body img {
+	max-width: 100%;
+	height: auto;
+	border: 1px solid var(--color-border);
+	border-radius: var(--border-radius);
+}
+
+/* -- Tablas ------------------------------------------------------------------ */
+/* Envuelto en JS dentro de un .table-scroll: una tabla ancha hace scroll
+   horizontal contenido en vez de desbordar la página. */
+.article-body .table-scroll {
+	overflow-x: auto;
+}
+
+.article-body table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 0.95rem;
+}
+
+.article-body th,
+.article-body td {
+	border: 1px solid var(--color-border);
+	padding: 0.65rem 1rem;
+	text-align: left;
+}
+
+.article-body thead th {
+	background-color: var(--color-primary-light);
+	color: var(--color-primary);
+	font-weight: 700;
+}
+
+.article-body tbody tr:nth-child(even) {
+	background-color: var(--color-bg-alt);
+}

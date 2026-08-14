@@ -1,0 +1,123 @@
+---
+import '../styles/global.css';
+
+interface Props {
+	title?: string;
+}
+
+const { title = "Rubén Ferrer Márquez - Portfolio Profesional" } = Astro.props;
+
+// Las secciones del navbar (#hero, #skills...) solo existen en la home.
+// Desde cualquier otra página hay que anteponer "/" para navegar primero
+// a la home y luego hacer scroll a la sección.
+const isHome = Astro.url.pathname === '/';
+const navHref = (id: string) => (isHome ? `#${id}` : `/#${id}`);
+---
+
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>{title}</title>
+	<!-- Tipografía Space Grotesk y Fira Code -->
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+	<!-- NAVEGACIÓN -->
+	<header class="navbar">
+		<div class="container">
+			<a href={navHref('hero')} class="logo">RFM</a>
+			<button type="button" class="nav-toggle" id="navToggle" aria-label="Abrir menú" aria-expanded="false" aria-controls="navLinks">
+				<span></span><span></span><span></span>
+			</button>
+			<nav>
+				<ul class="nav-links" id="navLinks">
+					<li><a href={navHref('hero')} class="nav-link">Inicio</a></li>
+					<li><a href={navHref('sobre-mi')} class="nav-link">Sobre mí</a></li>
+					<li><a href={navHref('experiencia')} class="nav-link">Experiencia</a></li>
+					<li><a href={navHref('skills')} class="nav-link">Skills</a></li>
+					<li><a href={navHref('ctf')} class="nav-link">CTF</a></li>
+					<li><a href={navHref('proyectos')} class="nav-link">Proyectos</a></li>
+					<li><a href={navHref('certificados')} class="nav-link">Certificados</a></li>
+					<li><a href={navHref('contacto')} class="nav-link">Contacto</a></li>
+				</ul>
+			</nav>
+		</div>
+	</header>
+
+	<main>
+		<slot />
+	</main>
+
+	<!-- 5. CONTACTO -->
+	<footer id="contacto" class="footer">
+		<div class="container footer-container">
+			<h2 class="section-title text-white">Contacto</h2>
+			<div class="contact-links">
+				<a href="https://www.linkedin.com/in/rub%C3%A9n-ferrer-8066353ba/" class="contact-link" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+				<a href="https://github.com/brean-rb" class="contact-link" target="_blank" rel="noopener noreferrer">GitHub</a>
+			</div>
+			<p class="footer-copy">&copy; 2026 Rubén Ferrer Márquez. Todos los derechos reservados.</p>
+		</div>
+	</footer>
+
+	<!-- MENÚ HAMBURGUESA (móvil) -->
+	<script>
+		document.addEventListener('DOMContentLoaded', () => {
+			const toggle = document.getElementById('navToggle');
+			const navLinks = document.getElementById('navLinks');
+			if (!toggle || !navLinks) return;
+
+			const closeMenu = () => {
+				navLinks.classList.remove('nav-open');
+				toggle.setAttribute('aria-expanded', 'false');
+			};
+
+			toggle.addEventListener('click', () => {
+				const isOpen = navLinks.classList.toggle('nav-open');
+				toggle.setAttribute('aria-expanded', String(isOpen));
+			});
+
+			// Cerrar el menú al elegir un enlace (navegación de una sola página)
+			navLinks.querySelectorAll('a').forEach((link) => link.addEventListener('click', closeMenu));
+		});
+	</script>
+
+	<!-- SCROLL SPY SCRIPT -->
+	<script>
+		document.addEventListener('DOMContentLoaded', () => {
+			const sections = document.querySelectorAll('section, footer');
+			const navLinks = document.querySelectorAll<HTMLAnchorElement>('.nav-link');
+
+			const observerOptions = {
+				root: null,
+				rootMargin: '-50% 0px -50% 0px',
+				threshold: 0
+			};
+
+			const observer = new IntersectionObserver((entries) => {
+				entries.forEach(entry => {
+					if (entry.isIntersecting) {
+						navLinks.forEach(link => {
+							link.classList.remove('active');
+							// link.href (propiedad, no atributo) siempre resuelve la URL completa,
+							// así que .hash funciona igual con "#id" (home) que con "/#id" (subpáginas).
+							if (new URL(link.href).hash.slice(1) === entry.target.id) {
+								link.classList.add('active');
+							}
+						});
+					}
+				});
+			}, observerOptions);
+
+			sections.forEach(sec => observer.observe(sec));
+		});
+	</script>
+</body>
+
+</html>

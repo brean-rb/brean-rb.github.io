@@ -1,0 +1,112 @@
+---
+import { getCollection, render, type CollectionEntry } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import '../../styles/article.css';
+
+export async function getStaticPaths() {
+	const projects = await getCollection('projects', ({ data }) => !data.draft);
+	return projects.map((project) => ({
+		params: { slug: project.id },
+		props: { project },
+	}));
+}
+
+type Props = { project: CollectionEntry<'projects'> };
+
+const { project } = Astro.props;
+const { Content } = await render(project);
+
+const formattedDate = project.data.date.toLocaleDateString('es-ES', {
+	day: 'numeric',
+	month: 'long',
+	year: 'numeric',
+});
+---
+
+<BaseLayout title={`${project.data.title} - Rubén Ferrer Márquez`}>
+	<section class="projects-section">
+		<div class="container">
+			<article class="article-content">
+				<a href="/#proyectos" class="article-back">← Volver a proyectos</a>
+
+				<header class="article-header">
+					<h1 class="article-title">{project.data.title}</h1>
+					<p class="article-meta tech-mono">{formattedDate} · {project.data.stack.join(' · ')}</p>
+				</header>
+
+				<div class="article-body">
+					<Content />
+				</div>
+
+				{project.data.repoUrl && (
+					<p class="article-repo">
+						<a href={project.data.repoUrl} class="btn btn-outline" target="_blank" rel="noopener noreferrer">Repositorio</a>
+					</p>
+				)}
+			</article>
+		</div>
+	</section>
+</BaseLayout>
+
+<script>
+	// Botón "Copiar" en cada bloque de código: Shiki expone el lenguaje en
+	// data-language (viene del ``` del Markdown) y ya trae el resaltado.
+	function setupCodeBlocks() {
+		document.querySelectorAll<HTMLPreElement>('.article-body pre.astro-code').forEach((pre) => {
+			const code = pre.querySelector('code');
+			if (!code) return;
+
+			const button = document.createElement('button');
+			button.type = 'button';
+			button.className = 'code-copy-btn';
+			button.textContent = 'Copiar';
+			button.addEventListener('click', async () => {
+				try {
+					await navigator.clipboard.writeText(code.textContent ?? '');
+					button.textContent = 'Copiado ✓';
+				} catch {
+					button.textContent = 'Error';
+				}
+				setTimeout(() => {
+					button.textContent = 'Copiar';
+				}, 2000);
+			});
+			pre.appendChild(button);
+		});
+	}
+
+	// Convierte cada <p><img alt="..."></p> aislado en <figure><img><figcaption>,
+	// usando el alt como texto de la leyenda ("Figura N. ...").
+	function setupFigures() {
+		let count = 0;
+		document.querySelectorAll<HTMLParagraphElement>('.article-body p').forEach((p) => {
+			const img = p.querySelector('img');
+			if (!img || p.children.length !== 1 || (p.textContent ?? '').trim() !== '') return;
+
+			count += 1;
+			const figure = document.createElement('figure');
+			p.replaceWith(figure);
+			figure.appendChild(img);
+			if (img.alt) {
+				const caption = document.createElement('figcaption');
+				caption.textContent = `Figura ${count}. ${img.alt}`;
+				figure.appendChild(caption);
+			}
+		});
+	}
+
+	// Envuelve cada <table> en un contenedor con scroll horizontal contenido,
+	// para que una tabla ancha no desborde la columna de lectura en móvil.
+	function setupTables() {
+		document.querySelectorAll<HTMLTableElement>('.article-body table').forEach((table) => {
+			const wrapper = document.createElement('div');
+			wrapper.className = 'table-scroll';
+			table.replaceWith(wrapper);
+			wrapper.appendChild(table);
+		});
+	}
+
+	setupCodeBlocks();
+	setupFigures();
+	setupTables();
+</script>
